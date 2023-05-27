@@ -1,5 +1,5 @@
 import React from 'react';
-import {View, Text, StyleSheet, FlatList, Pressable} from 'react-native';
+import {View, Text, StyleSheet, FlatList, Pressable, Image} from 'react-native';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import Octicons from 'react-native-vector-icons/Octicons';
 import {useNavigation} from '@react-navigation/native';
@@ -37,7 +37,11 @@ function cardList(item: any, dispatch: Function, navigation: any) {
         </View>
 
         <View style={styles.cardPhoto}>
-          <Octicons name="feed-person" color={'black'} size={80} />
+          {item?.image ? (
+            <Image source={{uri: item?.image}} style={styles.cardImage} />
+          ) : (
+            <Octicons name="feed-person" color={'black'} size={80} />
+          )}
         </View>
       </View>
 
@@ -171,5 +175,13 @@ const styles = StyleSheet.create({
   emptyListMessage: {
     fontSize: 20,
     color: 'black',
+  },
+  cardImage: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    resizeMode: 'contain',
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.25)',
   },
 });

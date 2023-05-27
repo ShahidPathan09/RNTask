@@ -1,19 +1,21 @@
 import React, {useState} from 'react';
-import {View, Text, StyleSheet, Button, TextInput} from 'react-native';
+import {View, Text, StyleSheet, Button, TextInput, Image} from 'react-native';
 import {Formik, ErrorMessage} from 'formik';
 import BouncyCheckbox from 'react-native-bouncy-checkbox';
 import DatePicker from 'react-native-modern-datepicker';
 import dayjs from 'dayjs';
-import moment from 'moment';
 import {useDispatch, useSelector} from 'react-redux';
 import {useNavigation} from '@react-navigation/native';
+import ImagePicker from 'react-native-image-crop-picker';
+import FontAwesome from 'react-native-vector-icons/FontAwesome';
+import AntDesign from 'react-native-vector-icons/AntDesign';
 
 import {FormValidation} from './handler';
 import {setCardData, UpdateCardData, updateCard} from '../Store/Slice/Slice';
 
 function UpdateData({route}: any) {
   const routeData = route?.params?.data || {};
-  const {id, fName, lName, dob, married} = routeData;
+  const {id, fName, lName, dob, married, image} = routeData;
 
   const cardUpdateFlag = route?.params?.cardUpdateFlag ?? false;
 
@@ -27,8 +29,22 @@ function UpdateData({route}: any) {
   const navigation = useNavigation();
   const [dateField, setDateField] = useState(false);
 
-  const date = new Date();
-  const modifiedDate = moment(date).format('YYYY/MM/DD').replace(/\//g, '-');
+  const modifiedDate = dayjs().format('YYYY-MM-DD');
+
+  const openImagePicker = (setFieldValue: Function) => {
+    ImagePicker.openPicker({
+      width: 300,
+      height: 400,
+      cropping: true,
+      includeBase64: true,
+    })
+      .then(async imageData => {
+        setFieldValue('image', imageData?.path);
+      })
+      .catch((err: any) => {
+        console.log('error', err);
+      });
+  };
 
   return (
     <View style={styles.container}>
@@ -42,6 +58,7 @@ function UpdateData({route}: any) {
           lName: lName ?? '',
           dob: dob ?? '',
           married: married ?? false,
+          image: image ?? '',
         }}
         validationSchema={FormValidation}
         onSubmit={(values: any) => {
@@ -55,6 +72,7 @@ function UpdateData({route}: any) {
             lName: values?.lName,
             dob: values?.dob,
             married: values?.married,
+            image: values?.image,
           };
 
           Object.keys(routeData).length
@@ -135,6 +153,34 @@ function UpdateData({route}: any) {
               isChecked={values?.married}
             />
 
+            <View style={styles.imageContainer}>
+              <Text style={styles.checkboxLabelStyle}>Choose image</Text>
+
+              {values?.image ? (
+                <>
+                  <Image
+                    source={{uri: values?.image}}
+                    style={styles.cardImage}
+                  />
+                  <AntDesign
+                    name="closecircle"
+                    size={25}
+                    color="black"
+                    style={styles.routeCardImage}
+                    onPress={() => setFieldValue('image', '')}
+                  />
+                </>
+              ) : (
+                <FontAwesome
+                  name="image"
+                  size={30}
+                  color="black"
+                  style={styles.imageIcon}
+                  onPress={() => openImagePicker(setFieldValue)}
+                />
+              )}
+            </View>
+
             <View style={styles.submitBtnContainer}>
               <Button
                 onPress={handleSubmit}
@@ -176,7 +222,6 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     fontSize: 22,
     color: 'black',
-    // marginBottom: 5,
   },
   errorMessageStyle: {
     marginBottom: 5,
@@ -192,9 +237,30 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     alignSelf: 'center',
   },
-  submitBtnContainer: {
-    width: '30%',
+  imageContainer: {
     marginVertical: 30,
+    flexDirection: 'row',
+  },
+  imageIcon: {
+    marginHorizontal: 15,
+  },
+  cardImage: {
+    width: 120,
+    height: 120,
+    marginHorizontal: 10,
+    borderRadius: 60,
+    resizeMode: 'contain',
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.1)',
+  },
+  routeCardImage: {
+    position: 'absolute',
+    left: '60%',
+    top: '3%',
+  },
+  submitBtnContainer: {
+    width: '35%',
+    marginVertical: 20,
     alignSelf: 'center',
   },
 });
