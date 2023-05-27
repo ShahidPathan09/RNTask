@@ -9,16 +9,20 @@ import {useDispatch, useSelector} from 'react-redux';
 import {useNavigation} from '@react-navigation/native';
 
 import {FormValidation} from './handler';
-import {setCardData, UpdateCardData} from '../Store/Slice/Slice';
+import {setCardData, UpdateCardData, updateCard} from '../Store/Slice/Slice';
 
-function UpdateData() {
+function UpdateData({route}: any) {
+  const routeData = route?.params?.data || {};
+  const {id, fName, lName, dob, married} = routeData;
+
+  const cardUpdateFlag = route?.params?.cardUpdateFlag ?? false;
+
   const dispatch = useDispatch();
   const cardData = useSelector(
     (state: {updateData: UpdateCardData}) => state?.updateData?.data,
   );
 
-  const lastCardId = cardData.slice(-1)[0] || [];
-  // console.log('cardData', cardData);
+  const lastCardId = cardData.slice(-1)[0] || {};
 
   const navigation = useNavigation();
   const [dateField, setDateField] = useState(false);
@@ -28,20 +32,35 @@ function UpdateData() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.screenTitle}>UpdateData</Text>
+      <Text style={styles.screenTitle}>
+        {cardUpdateFlag ? 'Update Details' : 'New Entry'}
+      </Text>
 
       <Formik
-        initialValues={{fName: '', lName: '', dob: '', married: false}}
+        initialValues={{
+          fName: fName ?? '',
+          lName: lName ?? '',
+          dob: dob ?? '',
+          married: married ?? false,
+        }}
         validationSchema={FormValidation}
         onSubmit={(values: any) => {
           const updatedCardData = {
-            id: lastCardId.hasOwnProperty('id') ? lastCardId?.id + 1 : 1,
+            id: id
+              ? id
+              : lastCardId.hasOwnProperty('id')
+              ? lastCardId?.id + 1
+              : 1,
             fName: values?.fName,
             lName: values?.lName,
             dob: values?.dob,
             married: values?.married,
           };
-          dispatch(setCardData(updatedCardData));
+
+          Object.keys(routeData).length
+            ? dispatch(updateCard(updatedCardData))
+            : dispatch(setCardData(updatedCardData));
+
           setTimeout(() => {
             navigation.navigate('Home');
           }, 1500);
@@ -117,7 +136,10 @@ function UpdateData() {
             />
 
             <View style={styles.submitBtnContainer}>
-              <Button onPress={handleSubmit} title="Submit" />
+              <Button
+                onPress={handleSubmit}
+                title={cardUpdateFlag ? 'Update' : 'Submit'}
+              />
             </View>
           </View>
         )}
@@ -134,9 +156,10 @@ const styles = StyleSheet.create({
   },
   screenTitle: {
     marginVertical: 20,
-    fontSize: 25,
+    fontSize: 28,
     color: 'black',
     textAlign: 'center',
+    textDecorationLine: 'underline',
   },
   inputContainer: {
     width: '80%',

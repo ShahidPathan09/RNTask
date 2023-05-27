@@ -7,8 +7,8 @@ import {useSelector, useDispatch} from 'react-redux';
 
 import {UpdateCardData, removeCard} from '../Store/Slice/Slice';
 
-// Render Cards
-function cardList(item: any, dispatch: Function) {
+// Renders Cards
+function cardList(item: any, dispatch: Function, navigation: any) {
   return (
     <View style={styles.cardContainer}>
       <View style={styles.cardDetails}>
@@ -42,7 +42,17 @@ function cardList(item: any, dispatch: Function) {
       </View>
 
       <View style={styles.cardOperationContainer}>
-        <AntDesign name="edit" size={25} color="black" />
+        <AntDesign
+          name="edit"
+          size={25}
+          color="black"
+          onPress={() =>
+            navigation.navigate('UpdateData', {
+              cardUpdateFlag: true,
+              data: item,
+            })
+          }
+        />
         <AntDesign
           name="delete"
           size={25}
@@ -54,13 +64,23 @@ function cardList(item: any, dispatch: Function) {
   );
 }
 
+// Renders when list is Empty
+function emptyList() {
+  return (
+    <View style={styles.emptyListContainer}>
+      <Text style={styles.emptyListMessage}>No cards found</Text>
+      <Text style={styles.emptyListMessage}>
+        Click below on 'ADD' to add new cards
+      </Text>
+    </View>
+  );
+}
+
 // Main component
 function Home() {
   const storedCardData = useSelector(
     (state: {updateData: UpdateCardData}) => state.updateData?.data,
   );
-
-  console.log('storedCardData', storedCardData);
 
   const navigation = useNavigation();
   const dispatch = useDispatch();
@@ -70,7 +90,9 @@ function Home() {
       <FlatList
         data={storedCardData}
         extraData={storedCardData}
-        renderItem={({item}) => cardList(item, dispatch)}
+        renderItem={({item}) => cardList(item, dispatch, navigation)}
+        ListEmptyComponent={emptyList}
+        contentContainerStyle={styles.flatListContentContainer}
       />
 
       <Pressable
@@ -88,6 +110,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.05)',
+  },
+  flatListContentContainer: {
+    flexGrow: 1,
   },
   addBtnContainer: {
     borderWidth: 1,
@@ -137,5 +162,14 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     width: '50%',
     marginVertical: 15,
+  },
+  emptyListContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    flex: 1,
+  },
+  emptyListMessage: {
+    fontSize: 20,
+    color: 'black',
   },
 });
